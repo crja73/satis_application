@@ -4,6 +4,7 @@ from datetime import timedelta, datetime
 from docxtpl import DocxTemplate # редактирование шаблона *.docx
 import sqlite3
 from PySide6 import QtCore, QtWidgets, QtGui
+
 from config import *
 import os, PySide6
 import easygui
@@ -15,8 +16,9 @@ os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 from PySide6.QtWidgets import *
 
 class MyWidget(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
         ####### Формирование основного окна:
 
         ####### название основного окна
@@ -29,49 +31,63 @@ class MyWidget(QtWidgets.QWidget):
         self.centralwidget = QtWidgets.QWidget()
         self.centralwidget.setObjectName("centralwidget")
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(0, 500, 1878, 478)) # 1-левый край горизонт, 2-вертикаль от верха, 3-ширина, 4-высота
+        self.tableWidget.setGeometry(QtCore.QRect(477, 0, 1390, 870)) # 1-левый край горизонт, 2-вертикаль от верха, 3-ширина, 4-высота
         self.tableWidget.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(31)
 
+
         ####### дерево фильтра
         self.treeView = QtWidgets.QTreeView(self.centralwidget)
-        self.treeView.setGeometry(QtCore.QRect(0, 0, 260, 500))
+        self.treeView.setGeometry(QtCore.QRect(0, 0, 455, 400))
         self.treeView.setObjectName("treeView")
+        
 
-        ####### отображать скролл
-        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+
 
         ####### воткнуть таблицу
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.centralwidget)
         self.setLayout(self.layout)
 
+
+        ####### отображать скролл
+        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+
+        
+
         ####### Выделять всю строку
         self.tableWidget.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
 
         ####### Кнопки
         self.btn_protokol = QtWidgets.QPushButton("Подготовить протокол", self)
-        self.btn_protokol.setFixedWidth(200)
-        self.btn_protokol.move(280, 11)
+        self.btn_protokol.setFixedWidth(150)
+        self.btn_protokol.move(10, 419)
         self.btn_protokol.setStyleSheet('QPushButton {background-color: #483D8B; color: white;}')
 
         self.btn_company = QtWidgets.QPushButton("Добавить компанию", self)
-        self.btn_company.setFixedWidth(200)
-        self.btn_company.move(280, 50)
+        self.btn_company.setFixedWidth(150)
+        self.btn_company.move(163, 419)
         self.btn_company.setStyleSheet('QPushButton {background-color: #483D8B; color: white;}')
 
         self.btn_pdf = QtWidgets.QPushButton("Добавить pdf файл", self)
-        self.btn_pdf.setFixedWidth(200)
-        self.btn_pdf.move(280, 89)
+        self.btn_pdf.setFixedWidth(150)
+        self.btn_pdf.move(316, 419)
         self.btn_pdf.setStyleSheet('QPushButton {background-color: #483D8B; color: white;}')
+
+        self.btn_openpdf = QtWidgets.QPushButton("Открыть pdf файл", self)
+        self.btn_openpdf.setFixedWidth(150)
+        self.btn_openpdf.move(10, 856)
+        self.btn_openpdf.setStyleSheet('QPushButton {background-color: #483D8B; color: white;}')
+
 
 
         ####### действие при нажатии кнопок
         self.btn_protokol.clicked.connect(self.Dannie)
         self.btn_company.clicked.connect(self.addPlochadka)
         self.btn_pdf.clicked.connect(self.addpdf)
+        self.btn_openpdf.clicked.connect(self.open_pdf)
 
         ####### переменная по названию компании
         short_name_company = "clients" # неправильная сортировка
@@ -121,7 +137,8 @@ class MyWidget(QtWidgets.QWidget):
                                                             'П_8',
                                                             'П_9',
                                                             'П_10',
-                                                            'Протокол_2:'])
+                                                            'Протокол_2:',
+                                                            'pdf'])
                 item.setBackground(QtGui.QColor(72, 61, 139))
                 item.setForeground(QtGui.QColor(255, 255, 255))
 
@@ -177,6 +194,18 @@ class MyWidget(QtWidgets.QWidget):
         a18 = self.tableWidget.item(row, 17).text()  # отметка от ПТО'шника о готовности
         a19 = self.tableWidget.item(row, 18).text()  # отметка лаборанта о готовности протокола
         a20 = self.tableWidget.item(row, 19).text()  # прикреплённый PDF
+
+        #model = QStandardItemModel(self.treeView)
+        #foods = row.split('')
+        #for food in foods:
+            #item = QStandardItem(food)
+            #item.setCheckable(True)
+            #model.appendRow(item)
+        #self.treeView.setModel(model)
+
+
+
+
 
         ####### данные из sql листов
         conn = sqlite3.connect(r'//192.168.1.12/Scan/SqLite/lab.db')
@@ -271,10 +300,10 @@ class MyWidget(QtWidgets.QWidget):
         conn.commit()
         cur.close()
 
-        
-        print('Что то пошло не так, попробуйте еще раз')
-
-
+    def open_pdf(self):
+        path = "C:/Users"
+        path = os.path.realpath(path)
+        os.startfile(path)
 
 
 if __name__ == "__main__":
